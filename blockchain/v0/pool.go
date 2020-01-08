@@ -64,6 +64,8 @@ type BlockPool struct {
 	cmn.BaseService
 	startTime time.Time
 
+	blockchainReactor *BlockchainReactor
+
 	mtx sync.Mutex
 	// block requests
 	requesters map[int64]*bpRequester
@@ -292,7 +294,14 @@ func (pool *BlockPool) SetPeerHeight(peerID p2p.ID, height int64) {
 	}
 
 	if height > pool.maxPeerHeight {
-		pool.maxPeerHeight = height
+		pool.SetMaxHeightByPeers(height)
+	}
+}
+
+func (pool *BlockPool) SetMaxHeightByPeers(height int64) {
+	pool.maxPeerHeight = height
+	if pool.blockchainReactor != nil {
+		pool.blockchainReactor.SetMaxHeightByPeers(height)
 	}
 }
 
@@ -336,7 +345,7 @@ func (pool *BlockPool) updateMaxPeerHeight() {
 			max = peer.height
 		}
 	}
-	pool.maxPeerHeight = max
+	pool.SetMaxHeightByPeers(max)
 }
 
 // Pick an available peer with at least the given minHeight.

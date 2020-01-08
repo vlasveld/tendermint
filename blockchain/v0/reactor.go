@@ -42,6 +42,7 @@ type consensusReactor interface {
 	// for when we switch from blockchain reactor and fast sync to
 	// the consensus machine
 	SwitchToConsensus(sm.State, int)
+	SetMaxHeightByPeers(int64)
 }
 
 type peerError struct {
@@ -99,6 +100,7 @@ func NewBlockchainReactor(state sm.State, blockExec *sm.BlockExecutor, store *st
 		errorsCh:     errorsCh,
 	}
 	bcR.BaseReactor = *p2p.NewBaseReactor("BlockchainReactor", bcR)
+	bcR.pool.blockchainReactor = bcR
 	return bcR
 }
 
@@ -203,6 +205,13 @@ func (bcR *BlockchainReactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) 
 		bcR.pool.SetPeerHeight(src.ID(), msg.Height)
 	default:
 		bcR.Logger.Error(fmt.Sprintf("Unknown message type %v", reflect.TypeOf(msg)))
+	}
+}
+
+func (bcR *BlockchainReactor) SetMaxHeightByPeers(height int64) {
+	conR, ok := bcR.Switch.Reactor("CONSENSUS").(consensusReactor)
+	if ok {
+		conR.SetMaxHeightByPeers(height)
 	}
 }
 

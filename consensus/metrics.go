@@ -48,6 +48,8 @@ type Metrics struct {
 	CommittedHeight metrics.Gauge
 	// Whether or not a node is fast syncing. 1 if yes, 0 if no.
 	FastSyncing metrics.Gauge
+	// Max height as reported by peers
+	MaxHeightByPeers metrics.Gauge
 
 	// Number of blockparts transmitted by peer.
 	BlockParts metrics.Counter
@@ -148,6 +150,12 @@ func PrometheusMetrics(namespace string, labelsAndValues ...string) *Metrics {
 			Subsystem: MetricsSubsystem,
 			Name:      "fast_syncing",
 			Help:      "Whether or not a node is fast syncing. 1 if yes, 0 if no.",
+		}, labels).With(labelsAndValues...),
+		MaxHeightByPeers: prometheus.NewGaugeFrom(stdprometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: MetricsSubsystem,
+			Name:      "max_peer_height",
+			Help:      "Max height as reported by peers.",
 		}, labels).With(labelsAndValues...),
 		BlockParts: prometheus.NewCounterFrom(stdprometheus.CounterOpts{
 			Namespace: namespace,

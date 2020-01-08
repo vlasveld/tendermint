@@ -357,6 +357,7 @@ type bcReactor interface {
 	sendPeerError(err error, peerID p2p.ID)
 	resetStateTimer(name string, timer **time.Timer, timeout time.Duration)
 	switchToConsensus()
+	setMaxHeightByPeers(height int64)
 }
 
 // SetLogger sets the FSM logger.

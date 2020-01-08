@@ -44,6 +44,7 @@ type consensusReactor interface {
 	// for when we switch from blockchain reactor and fast sync to
 	// the consensus machine
 	SwitchToConsensus(sm.State, int)
+	SetMaxHeightByPeers(height int64)
 }
 
 // BlockchainReactor handles long-term catchup syncing.
@@ -470,6 +471,15 @@ func (bcR *BlockchainReactor) switchToConsensus() {
 	// else {
 	// Should only happen during testing.
 	// }
+}
+
+// Implements bcReactor
+// Called by FSM to inform the Node of the max peer height as reported by peers
+func (bcR *BlockchainReactor) setMaxHeightByPeers(height int64) {
+	conR, ok := bcR.Switch.Reactor("CONSENSUS").(consensusReactor)
+	if ok {
+		conR.SetMaxHeightByPeers(height)
+	}
 }
 
 // Implements bcRNotifier

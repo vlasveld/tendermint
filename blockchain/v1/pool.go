@@ -64,6 +64,7 @@ func (pool *BlockPool) updateMaxPeerHeight() {
 		}
 	}
 	pool.MaxPeerHeight = newMax
+	pool.toBcR.setMaxHeightByPeers(newMax)
 }
 
 // UpdatePeer adds a new peer or updates an existing peer with a new height.

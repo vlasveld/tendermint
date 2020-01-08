@@ -39,9 +39,10 @@ type ConsensusReactor struct {
 
 	conS *ConsensusState
 
-	mtx      sync.RWMutex
-	fastSync bool
-	eventBus *types.EventBus
+	mtx              sync.RWMutex
+	fastSync         bool
+	maxHeightByPeers int64
+	eventBus         *types.EventBus
 
 	metrics *Metrics
 }
@@ -124,6 +125,16 @@ conS:
 conR:
 %+v`, err, conR.conS, conR))
 	}
+}
+
+// SetMaxHeightByPeers sets the max height as reported by peers
+func (conR *ConsensusReactor) SetMaxHeightByPeers(height int64) {
+	conR.Logger.Info("SetMaxHeightByPeers")
+
+	conR.mtx.Lock()
+	conR.maxHeightByPeers = height
+	conR.mtx.Unlock()
+	conR.metrics.MaxHeightByPeers.Set(float64(height))
 }
 
 // GetChannels implements Reactor
@@ -369,6 +380,13 @@ func (conR *ConsensusReactor) FastSync() bool {
 	conR.mtx.RLock()
 	defer conR.mtx.RUnlock()
 	return conR.fastSync
+}
+
+// FastSync returns whether the consensus reactor is in fast-sync mode.
+func (conR *ConsensusReactor) MaxHeightByPeers() int64 {
+	conR.mtx.RLock()
+	defer conR.mtx.RUnlock()
+	return conR.maxHeightByPeers
 }
 
 //--------------------------------------
